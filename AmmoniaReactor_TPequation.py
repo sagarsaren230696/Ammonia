@@ -95,6 +95,7 @@ model.Phat = Var(model.z, model.t, bounds=(0.1, 1.1), initialize=1.0)
 model.uhat = Var(model.z, model.t, bounds=(0.01, 10.0), initialize=1.0)
 model.Temp = Var(model.z, model.t, bounds=(300.0, 1200.0), initialize=T_in)
 model.N = Var(model.S, model.z, model.t, initialize=lambda m,s,z,t: u_in*Ctot_in*y_in[s])
+model.N2_conversion = Var(model.t, initialize=0.05)
 
 # spatial derivatives
 model.dydz = DerivativeVar(model.y, wrt=model.z)
@@ -366,6 +367,10 @@ model.velocity_inlet = Constraint(model.t, rule=velocity_inlet_rule)
 
 # model.temperature_outlet = Constraint(model.t, rule=temperature_outlet_rule)
 
+def N2_conversion(m, t):
+    return m.N2_conversion[t] == (m.N['N2', m.z.first(), t] - m.N['N2', m.z.last(), t]) / (m.N['N2', m.z.first(), t] + 1e-10)
+model.N2_conversion_con_ = Constraint(model.t, rule=N2_conversion)
+
 # --------------------------------------------------
 # Discretization
 # --------------------------------------------------
@@ -495,6 +500,7 @@ for factor in reaction_factors:
     print(f"T_out      = {value(model.Temp[zL,tauL]):.4f} K")
     print(f"P_out      = {value(model.Pin*model.Phat[zL,tauL])/1e5:.6f} bar")
     print(f"u_out      = {value(model.uin*model.uhat[zL,tauL]):.8f} m/s")
+    print(f"N2_conv    = {value(model.N2_conversion[tauL])*100} %")
 
     # t = model.t.last()
 

@@ -336,6 +336,7 @@ solver = SolverFactory('ipopt')
 solver.options['tol'] = 1e-7
 solver.options['max_iter'] = 3000
 solver.options['linear_solver'] = 'ma97'
+# solver.options['mu_init'] = 1e-3
 
 results = solver.solve(model, tee=True)
 
